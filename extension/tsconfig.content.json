@@ -1,0 +1,6 @@
+// Each entry point is its own program: Chrome loads them as separate classic
+// scripts, so they must not share top-level names.
+{
+  "extends": "./tsconfig.base.json",
+  "files": ["src/content.ts", "src/types.d.ts"]
+}

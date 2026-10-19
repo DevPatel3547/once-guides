@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import zipfile
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -21,18 +22,26 @@ origin = f'{url.scheme}://{url.netloc}'
 root = Path(__file__).resolve().parents[1]
 extension = root / 'extension'
 unpacked = root / '.sites-runtime' / 'extension'
+# Start from an empty unpacked folder so no stale pre-TypeScript scripts linger.
+shutil.rmtree(unpacked, ignore_errors=True)
 unpacked.mkdir(parents=True, exist_ok=True)
-files = ['manifest.json', 'background.js', 'content.js', 'popup.js', 'popup.html', 'popup.css', 'README.md']
+# Scripts are compiled from extension/src/*.ts by `pnpm build:extension`.
+scripts = ['dist/background.js', 'dist/content.js', 'dist/popup.js']
+missing = [name for name in scripts if not (extension / name).is_file()]
+if missing:
+    parser.error('Compiled extension scripts are missing (%s). Run `pnpm build:extension` first.' % ', '.join(missing))
+files = ['manifest.json', 'popup.html', 'popup.css', 'README.md'] + scripts
 files += [f'icon{s}.png' for s in (16, 32, 48, 128)]
 output = root / 'public' / 'once-extension.zip'
 with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
     for name in sorted(files):
         body = (extension / name).read_bytes()
-        if name in ('background.js', 'popup.js'):
-            source, count = re.subn(r"const ORIGIN='[^']+';", 'const ORIGIN=' + json.dumps(origin) + ';', body.decode(), count=1)
+        if name in ('dist/background.js', 'dist/popup.js'):
+            source, count = re.subn(r"const ORIGIN\s*=\s*'[^']+';", 'const ORIGIN = ' + json.dumps(origin) + ';', body.decode(), count=1)
             if count != 1:
                 raise ValueError(f'Missing origin in {name}')
             body = source.encode()
+        (unpacked / name).parent.mkdir(parents=True, exist_ok=True)
         (unpacked / name).write_bytes(body)
         info = zipfile.ZipInfo(name, (2026, 1, 1, 0, 0, 0))
         info.compress_type = zipfile.ZIP_DEFLATED

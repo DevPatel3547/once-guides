@@ -8,6 +8,7 @@ if(!/^[a-f0-9-]{36}$/.test(ONCE_DATABASE_ID)||ONCE_DATABASE_ID==='00000000-0000-
 if(!/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(ONCE_BUCKET_NAME))throw Error('Invalid R2 bucket name.');
 const run=(cmd,args)=>{const r=spawnSync(cmd,args,{stdio:'inherit',env:process.env});if(r.error)throw r.error;if(r.status!==0)process.exit(r.status??1);};
 run('pnpm',['test']);run('pnpm',['typecheck']);run('pnpm',['lint']);
+run('pnpm',['build:extension']);
 run('python3',['scripts/package-extension.py','--origin',ONCE_PUBLIC_ORIGIN]);
 run('pnpm',['build']);
 const config=JSON.parse(readFileSync('dist/server/wrangler.json','utf8'));

@@ -23,9 +23,11 @@ pnpm exec wrangler d1 migrations apply DB --local --config dist/server/wrangler.
 pnpm dev
 ```
 
+The extension is written in strict TypeScript (`extension/src`, typed against `@types/chrome`). `pnpm build:extension` compiles each entry point (service worker, injected content script, popup) to `extension/dist`, which the manifest and popup load; `pnpm extension:dev` runs that build first.
+
 Open http://localhost:5173. Load `.sites-runtime/extension` as an unpacked Chrome extension to test capture against the local editor. `public/once-extension.zip` is the matching development package. Never distribute it as a public release: its editor is localhost.
 
-Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. GitHub Actions runs these checks for pushes and pull requests. Build the public extension with `python3 scripts/package-extension.py --origin https://YOUR-VERIFIED-HOST`; that command updates both entry points together, includes the existing icons, and excludes environment files. See [deployment instructions](release/DEPLOYMENT.md) and [verification status](release/STATUS.md).
+Run `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. GitHub Actions runs these checks for pushes and pull requests. Build the public extension with `pnpm build:extension && python3 scripts/package-extension.py --origin https://YOUR-VERIFIED-HOST`; that command updates both entry points together, includes the existing icons, and excludes environment files. See [deployment instructions](release/DEPLOYMENT.md) and [verification status](release/STATUS.md).
 
 ## Release boundaries
 

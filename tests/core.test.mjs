@@ -43,7 +43,7 @@ function recorder(){
  const storage=source=>({async get(key){return {[key]:structuredClone(source[key])};},async set(value){Object.assign(source,structuredClone(value));},async remove(key){delete source[key];}});
  const chrome={storage:{local:storage(data),session:storage(session)},runtime:{getURL:s=>'chrome-extension://once/'+s,onMessage:{addListener(){}},onStartup:{addListener(){}}},action:{async setBadgeText(v){badge=v.text;},async setBadgeBackgroundColor(){}},permissions:{async contains(){return true;}},scripting:{async executeScript(){injects++;}},tabs:{async get(){return tab;},async query(){return [tab];},async sendMessage(){return structuredClone(tab.pageState);},async captureVisibleTab(){screenshots++;if(tab.afterCapture)tab.pageState=tab.afterCapture;return 'data:image/jpeg;base64,AAAA';},async create(){return {id:8};},onUpdated:{addListener(){}},onRemoved:{addListener(){}}}};
  const context=vm.createContext({chrome,console,crypto,URL,Date,Promise,Number,JSON,fetch,setTimeout,Uint8Array,btoa,createImageBitmap:async()=>{decoded++;throw new Error('test decoder');}});
- vm.runInContext(readFileSync(new URL('../extension/background.js',import.meta.url),'utf8'),context);
+ vm.runInContext(readFileSync(new URL('../extension/dist/background.js',import.meta.url),'utf8'),context);
  return {context,data,session,chrome,tab,screenshots:()=>screenshots,decoded:()=>decoded,call:(m,s={url:'chrome-extension://once/popup.html'})=>{context.m=m;context.sender=s;return vm.runInContext('command(m,sender)',context);}};
 }
 test('recorder start, text-only fallback, stop, and sender isolation',async()=>{

@@ -11,10 +11,11 @@
     "build": "node scripts/run-framework.mjs build",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "build:extension": "node scripts/build-extension.mjs",
     "db:generate": "drizzle-kit generate",
-    "test": "node --test tests/*.test.mjs",
-    "typecheck": "tsc --noEmit",
-    "extension:dev": "python3 scripts/package-extension.py --origin http://localhost:5173 --development",
+    "test": "node scripts/build-extension.mjs && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit && node scripts/build-extension.mjs --check",
+    "extension:dev": "node scripts/build-extension.mjs && python3 scripts/package-extension.py --origin http://localhost:5173 --development",
     "release:prepare": "node scripts/prepare-release.mjs"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
     "@tailwindcss/postcss": "4.2.1",
+    "@types/chrome": "0.1.24",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
